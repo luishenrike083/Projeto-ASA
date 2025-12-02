@@ -1,0 +1,53 @@
+---
+- name: Configuração de LVM conforme requisitos
+  hosts: all  # Ou o grupo específico (ex: 'db' ou 'app' se for o caso)
+  become: true
+  vars:
+    # REQUISITO: Utilizar 3 discos para o VG
+    # Ajuste estes dispositivos conforme sua VM real
+    discos_lvm:
+      - /dev/sdb
+      - /dev/sdc
+      - /dev/sdd
+
+  tasks:
+    - name: Instala o pacote LVM2 (necessário para gerenciar volumes)
+      package:
+        name: lvm2
+        state: present
+
+    # 1. Criar um Volume Group (VG) chamado dados usando 3 discos
+    - name: Cria o Volume Group 'dados'
+      community.general.lvg:
+        vg: dados
+        pvs: "{{ discos_lvm }}"
+        state: present
+
+    # 2. Criar um Logical Volume (LV) chamado ifpb com 15 GB
+    - name: Cria o Logical Volume 'ifpb' com 15GB
+      community.general.lvol:
+        vg: dados
+        lv: ifpb
+        size: 15g
+        state: present
+
+    # 3. Formatar o LV ifpb com o sistema de arquivos ext4
+    - name: Formata a partição ifpb como ext4
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/dados/ifpb
+
+    # Cria o diretório antes de montar
+    - name: Cria o diretório de montagem /dados
+      file:
+        path: /dados
+        state: directory
+        mode: '0755'
+
+    # 4. Configurar para ser montada automaticamente em /dados ao iniciar
+    - name: Monta o volume em /dados e persiste no fstab
+      ansible.posix.mount:
+        path: /dados
+        src: /dev/dados/ifpb
+        fstype: ext4
+        state: mounted
