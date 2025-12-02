@@ -1,0 +1,16 @@
+$TTL 86400
+@ IN SOA arq.luis.marcelino.devops. root.luis.marcelino.devops. (
+    2025120101 ;Serial
+    3600       ;Refresh
+    1800       ;Retry
+    604800     ;Expire
+    86400      ;Minimum TTL
+)
+    IN NS arq.luis.marcelino.devops.
+
+; Requisito: Ponteiros reversos
+; Substitua 1XX, 1YY, 1XY pelos finais dos IPs
+
+140    IN PTR arq.luis.marcelino.devops.
+118    IN PTR db.luis.marcelino.devops.
+108    IN PTR app.luis.marcelino.devops.

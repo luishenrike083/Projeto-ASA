@@ -1,0 +1,20 @@
+acl internal-network {
+    192.168.56.0/24;
+};
+
+options {
+    directory "/var/cache/bind";
+    dnssec-validation auto;
+    listen-on-v6 { any; };
+    
+    # Requisito: Aceitar requisições da rede interna
+    allow-query { localhost; internal-network; };
+    allow-transfer { localhost; };
+    recursion yes;
+    
+    # Requisito: Encaminhamento para 1.1.1.1 e 8.8.8.8
+    forwarders {
+        1.1.1.1;
+        8.8.8.8;
+    };
+};
