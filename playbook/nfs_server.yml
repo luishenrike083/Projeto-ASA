@@ -1,0 +1,50 @@
+---
+- name: Configuração do Servidor NFS
+  hosts: arq  # Ajuste para o grupo correto do seu inventário (ex: 'arquivos' ou 'storage')
+  become: true
+
+  tasks:
+    # 1. Instalação do pacote NFS
+    - name: Instala o servidor NFS Kernel
+      package:
+        name: nfs-kernel-server
+        state: present
+
+    # 2. Criação do usuário nfs-ifpb com shell removido
+    # Requisitos: Criar usuário 
+    # e remover o shell para segurança
+    - name: Cria o usuário nfs-ifpb sem acesso ao shell
+      user:
+        name: nfs-ifpb
+        shell: /usr/sbin/nologin
+        create_home: no
+        state: present
+      register: nfs_user  # Registra os dados para pegar o UID/GID depois
+
+    # 3. Criação e permissão do diretório
+    # Requisitos: Compartilhar /dados/nfs e permitir escrita apenas para nfs-ifpb
+    - name: Cria o diretório /dados/nfs e define permissões
+      file:
+        path: /dados/nfs
+        state: directory
+        owner: nfs-ifpb
+        group: nfs-ifpb
+        mode: '0755' # O dono (nfs-ifpb) escreve, outros apenas leem/executam
+
+    # 4. Configuração do /etc/exports com mapeamento e sync
+    # Requisitos:
+    # - Rede 192.168.56.0/24
+    # - Gravações imediatas (sync)
+    # - Mapear usuários remotos para nfs-ifpb (all_squash + anonuid)
+    - name: Configura o arquivo exports com mapeamento de UID/GID e Sync
+      lineinfile:
+        path: /etc/exports
+        line: "/dados/nfs 192.168.56.0/24(rw,sync,all_squash,anonuid={{ nfs_user.uid }},anongid={{ nfs_user.group }})"
+        state: present
+      notify: restart nfs
+
+  handlers:
+    - name: restart nfs
+      service:
+        name: nfs-kernel-server
+        state: restarted

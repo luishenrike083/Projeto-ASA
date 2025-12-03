@@ -1,6 +1,6 @@
 ---
 - name: Instala e configura servidores dns e dhcp.
-  hosts: dns
+  hosts: all
   become: true
 
   handlers:
@@ -38,7 +38,7 @@
       loop:
         - { src: "named.conf.options", dest: "/etc/bind/named.conf.options" }
         - { src: "named.conf.internal-zones", dest: "/etc/bind/named.conf.internal-zones" }
-        - { src: "luis.marcelino.devops.db", dest: "/etc/bind/seunome.devops.db" }
+        - { src: "luis.marcelino.devops.db", dest: "/etc/bind/luis.marcelino.devops.db" }
         - { src: "56.168.192.db", dest: "/etc/bind/56.168.192.db" }
       notify: restart bind
 
