@@ -1,0 +1,49 @@
+---
+- name: Configuração do Servidor de Banco de Dados e Autofs
+  hosts: db
+  become: true
+
+  tasks:
+    # --- Requisito: Instalar o servidor de banco de dados mariadb-server ---
+    - name: Instala o MariaDB Server
+      package:
+        name: mariadb-server
+        update_cache: yes
+        state: present
+
+    - name: Garante que o MariaDB está rodando e habilitado no boot
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    # --- Requisito: Instalar e configurar o serviço autofs ---
+    - name: Instala o Autofs e utilitários NFS
+      package:
+        name:
+          - autofs
+          - nfs-common  # Necessário para o sistema conseguir montar volumes NFS
+        state: present
+
+    # Configuração usando "Mapa Direto" (/-) para permitir montar num caminho absoluto específico (/var/nfs)
+    - name: Configura o auto.master para usar um mapa direto
+      lineinfile:
+        path: /etc/auto.master
+        line: "/- /etc/auto.nfs"
+        state: present
+      notify: restart autofs
+
+    # Define a regra de montagem: Onde montar (/var/nfs) -> Opções -> Origem (arq:/dados/nfs)
+    - name: Cria o arquivo de mapa /etc/auto.nfs
+      copy:
+        dest: /etc/auto.nfs
+        content: |
+          /var/nfs -fstype=nfs,rw,sync arq:/dados/nfs
+        mode: '0644'
+      notify: restart autofs
+
+  handlers:
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
