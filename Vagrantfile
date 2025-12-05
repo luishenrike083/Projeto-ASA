@@ -28,15 +28,10 @@ Vagrant.configure("2") do |config|
       arq.vm.disk :disk, size: "10GB", name: "disk-#{x}"
     end
 
+    # Chamada única para o playbook mestre
     arq.vm.provision "ansible" do |ansible|
       ansible.compatibility_mode = "2.0"
-      ansible.playbook = "playbook/conf-dns-dhcp.yml"
-    end
-    arq.vm.provision "ansible" do |ansible|
-       ansible.playbook = "playbook/storage.yml"
-    end
-    arq.vm.provision "ansible" do |ansible|
-       ansible.playbook = "playbook/nfs_server.yml"
+      ansible.playbook = "playbook/arq_main.yml"
     end
   end
 
