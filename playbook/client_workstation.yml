@@ -51,7 +51,7 @@
   handlers:
     - name: restart ssh
       service:
-        name: sshd  # Em alguns sistemas Debian/Ubuntu pode ser 'ssh', mas 'sshd' é comum. Ajuste se necessário.
+        name: sshd  
         state: restarted
 
     - name: restart autofs
