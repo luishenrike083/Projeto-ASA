@@ -1,10 +1,9 @@
 ---
 - name: Configuração de LVM conforme requisitos
-  hosts: all  # Ou o grupo específico (ex: 'db' ou 'app' se for o caso)
+  hosts: all  
   become: true
   vars:
     # REQUISITO: Utilizar 3 discos para o VG
-    # Ajuste estes dispositivos conforme sua VM real
     discos_lvm:
       - /dev/sdb
       - /dev/sdc
