@@ -9,7 +9,6 @@ $TTL 86400
     IN NS arq.luis.marcelino.devops.
 
 ; Requisito: Ponteiros reversos
-; Substitua 1XX, 1YY, 1XY pelos finais dos IPs
 
 140    IN PTR arq.luis.marcelino.devops.
 118    IN PTR db.luis.marcelino.devops.
