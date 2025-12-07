@@ -1,0 +1,60 @@
+---
+- name: Configuração do Host Cliente (Workstation)
+  hosts: cli
+  become: true
+
+  tasks:
+    # --- 1. Instalação de Pacotes Gráficos ---
+    # Requisito: Instalar firefox-esr e xauth
+    - name: Instala Firefox e utilitários X11
+      package:
+        name:
+          - firefox-esr
+          - xauth
+        update_cache: yes
+        state: present
+
+    # --- 2. Configuração do SSH (X11 Forwarding) ---
+    # Requisito: Permitir a exportação da interface dos aplicativos X11
+    - name: Habilita o X11Forwarding no servidor SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^X11Forwarding"
+        line: "X11Forwarding yes"
+        state: present
+      notify: restart ssh
+
+    # --- 3. Configuração do Autofs (Cliente NFS) ---
+    # Requisito: Montagem automática de /dados/nfs (do arq) em /var/nfs
+    - name: Instala Autofs e NFS Common
+      package:
+        name:
+          - autofs
+          - nfs-common
+        state: present
+
+    - name: Adiciona configuração de mapa direto ao auto.master
+      lineinfile:
+        path: /etc/auto.master
+        line: "/- /etc/auto.nfs"
+        state: present
+      notify: restart autofs
+
+    - name: Cria o arquivo de mapa /etc/auto.nfs
+      copy:
+        dest: /etc/auto.nfs
+        content: |
+          /var/nfs -fstype=nfs,rw,sync arq:/dados/nfs
+        mode: '0644'
+      notify: restart autofs
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: sshd  # Em alguns sistemas Debian/Ubuntu pode ser 'ssh', mas 'sshd' é comum. Ajuste se necessário.
+        state: restarted
+
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
