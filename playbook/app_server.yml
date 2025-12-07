@@ -1,0 +1,74 @@
+---
+- name: Configuração do Servidor de Aplicação (Web e Autofs)
+  hosts: app
+  become: true
+
+  tasks:
+    # --- Parte 1: Servidor Web Apache ---
+    # Requisito: Instalar e configurar o servidor web apache2
+    - name: Instala o Apache2
+      package:
+        name: apache2
+        update_cache: yes
+        state: present
+
+    - name: Garante que o Apache2 está rodando e habilitado no boot
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    # Requisito: Substituir a página default por index.html com dados do projeto
+    - name: Cria o arquivo index.html com os dados da equipe
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <!DOCTYPE html>
+          <html lang="pt-br">
+          <head>
+              <meta charset="UTF-8">
+              <title>Projeto de ASA</title>
+          </head>
+          <body>
+              <h1>Projeto de Infraestrutura de Redes</h1>
+              <p>Configuração automatizada via Ansible.</p>
+              <hr>
+              <ul>
+                  <li><strong>Nome:</strong> Luis Henrike Marinho da Costa - <strong>Matrícula:</strong> 20241380040</li>
+                  <li><strong>Nome:</strong> Marcelino Marcelo do Nascimento Camilo - <strong>Matrícula:</strong> 20241380018 </li>
+              </ul>
+          </body>
+          </html>
+        mode: '0644'
+
+    # --- Parte 2: Configuração do Autofs (Cliente NFS) ---
+    # Requisito: Instalar autofs para montagem automática de /dados/nfs em /var/nfs
+    - name: Instala Autofs e utilitários NFS
+      package:
+        name:
+          - autofs
+          - nfs-common
+        state: present
+
+    # Configura o mapa direto no arquivo mestre
+    - name: Adiciona configuração de mapa direto ao auto.master
+      lineinfile:
+        path: /etc/auto.master
+        line: "/- /etc/auto.nfs"
+        state: present
+      notify: restart autofs
+
+    # Cria o arquivo de mapeamento com a origem (arq) e destino (/var/nfs)
+    - name: Cria o arquivo de mapa /etc/auto.nfs
+      copy:
+        dest: /etc/auto.nfs
+        content: |
+          /var/nfs -fstype=nfs,rw,sync arq:/dados/nfs
+        mode: '0644'
+      notify: restart autofs
+
+  handlers:
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
