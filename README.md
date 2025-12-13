@@ -93,7 +93,7 @@ Para executar este projeto, é necessário ter instalado:
 
 ## ▶️ Como Executar
 
-1. **Clone o repositório:**
+1. **execute esses comandos no terminal**
    ```bash
    git clone https://github.com/luishenrike083/Projeto-ASA.git
    cd Projeto-asa
