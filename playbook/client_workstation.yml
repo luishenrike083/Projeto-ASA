@@ -1,4 +1,6 @@
 ---
+- import_playbook: common.yml
+
 - name: Configuração do Host Cliente (Workstation)
   hosts: cli
   become: true

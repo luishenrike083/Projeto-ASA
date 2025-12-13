@@ -1,6 +1,6 @@
 ---
 - name: Configuração de LVM conforme requisitos
-  hosts: all  
+  hosts: arq
   become: true
   vars:
     # REQUISITO: Utilizar 3 discos para o VG

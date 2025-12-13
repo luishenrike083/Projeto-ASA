@@ -1,6 +1,6 @@
 ---
 # Este playbook orquestra a configuração completa do servidor ARQ
-
+- import_playbook: common.yml
 - import_playbook: conf-dns-dhcp.yml
 - import_playbook: storage.yml
 - import_playbook: nfs_server.yml

@@ -1,0 +1,110 @@
+---
+- name: Configurações Comuns (Base) para todas as máquinas
+  hosts: all
+  become: true
+  vars:
+    # Definição dos usuários da equipe
+    membros_equipe:
+      - luis
+      - marcelino
+
+  tasks:
+    # --- 1. Atualização do Sistema ---
+    # Requisito: Atualizar o sistema operacional (update e upgrade) 
+    - name: Atualiza o cache do apt e realiza upgrade dos pacotes
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+
+    # --- 2. Configuração de NTP e Timezone ---
+    # Requisito: Ajustar zona de tempo para America/Recife 
+    - name: Define o Timezone para America/Recife
+      timezone:
+        name: America/Recife
+
+    # Requisito: Instalar e configurar NTP (chrony) para pool.ntp.br 
+    - name: Instala o Chrony (NTP)
+      package:
+        name: chrony
+        state: present
+
+    - name: Configura o servidor NTP brasileiro (pool.ntp.br)
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^pool'
+        line: 'pool pool.ntp.br iburst'
+        state: present
+      notify: restart chrony
+
+    # --- 3. Instalação de Pacotes Essenciais ---
+    # Requisito: Instalar cliente NFS 
+    - name: Instala pacotes comuns (NFS Client e Sudo)
+      package:
+        name:
+          - nfs-common
+          - sudo
+        state: present
+
+    # --- 4. Gerenciamento de Usuários e Grupos ---
+    # Requisito: Criar o grupo denominado ifpb 
+    - name: Cria o grupo ifpb
+      group:
+        name: ifpb
+        state: present
+
+    # Requisito: Criar usuários nome1/nome2 no grupo ifpb 
+    # Requisito: Gerar chaves públicas para os usuários 
+    - name: Cria usuários da equipe e gera chaves SSH
+      user:
+        name: "{{ item }}"
+        group: ifpb
+        shell: /bin/bash
+        create_home: yes
+        generate_ssh_key: yes  # Gera id_rsa automaticamente
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+      loop: "{{ membros_equipe }}"
+
+    # Requisito: Permitir que usuários do grupo ifpb tenham acesso sudo 
+    - name: Configura sudoers para o grupo ifpb
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%ifpb'
+        line: '%ifpb ALL=(ALL:ALL) ALL'
+        validate: 'visudo -cf %s'
+
+    # --- 5. Configuração e Segurança do SSH ---
+    # Requisito: Apresentar mensagem de saudação (Banner) 
+    - name: Cria o arquivo de Banner SSH
+      copy:
+        dest: /etc/ssh/banner
+        content: |
+          ***********************************************************
+          Acesso apenas para pessoas com autorização expressa!!!
+          ***********************************************************
+        mode: '0644'
+
+    - name: Configurações de segurança do SSHD
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      loop:
+        - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+        - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+        - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+        - { regexp: '^#?Banner', line: 'Banner /etc/ssh/banner' }
+      notify: restart ssh
+  handlers:
+    - name: restart chrony
+      service:
+        name: chrony
+        state: restarted
+
+    - name: restart ssh
+      service:
+        name: sshd
+        state: restarted
