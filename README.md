@@ -56,6 +56,28 @@ O ambiente é composto por 4 máquinas virtuais baseadas em **Debian 12 (Bookwor
 
 ---
 
+.
+├── Vagrantfile                   # Definição das VMs, Redes, RAM e Discos
+├── README.md                     # Documentação Geral do Projeto
+└── playbook/                     # Diretório de Scripts Ansible (Provisionamento)
+    ├── common.yml                # Configurações base (Usuários, NTP, SSH, Sudo)
+    ├── arq_main.yml              # Playbook mestre do servidor ARQ
+    ├── db_server.yml             # Playbook do Banco de Dados (MariaDB + AutoFS)
+    ├── app_server.yml            # Playbook do Servidor Web (Apache + AutoFS)
+    ├── client_workstation.yml    # Playbook do Cliente (X11 + AutoFS)
+    │
+    # Tasks Reutilizáveis (Roles simples)
+    ├── conf-dns-dhcp.yml         # Instalação e config de Bind9 e ISC-DHCP
+    ├── storage.yml               # Configuração de LVM (Volume Group e Logical Volume)
+    ├── nfs_server.yml            # Configuração de exportação NFS
+    │
+    # Arquivos de Configuração (Templates)
+    ├── dhcpd.conf                # Configuração do escopo DHCP e reservas de MAC
+    ├── named.conf.options        # Forwarders e ACLs do DNS
+    ├── named.conf.internal-zones # Definição das zonas direta e reversa
+    ├── luis.marcelino.devops.db  # Arquivo da Zona Direta (Nomes -> IPs)
+    └── 56.168.192.db             # Arquivo da Zona Reversa (IPs -> Nomes)
+
 ## 🛠️ Pré-requisitos
 Para executar este projeto, é necessário ter instalado:
 * [VirtualBox](https://www.virtualbox.org/)
