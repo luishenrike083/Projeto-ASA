@@ -67,4 +67,5 @@ Para executar este projeto, é necessário ter instalado:
 1. **Clone o repositório:**
    ```bash
    git clone [https://github.com/seu-usuario/projeto-asa.git](https://github.com/seu-usuario/projeto-asa.git)
-   cd projeto-asa
+   cd Projeto-asa
+   vagrant up
