@@ -56,6 +56,11 @@ O ambiente é composto por 4 máquinas virtuais baseadas em **Debian 12 (Bookwor
 
 ---
 
+## 📂 Estrutura de Arquivos do Projeto
+
+A organização dos diretórios e arquivos de configuração do Ansible segue a estrutura abaixo:
+
+```plaintext
 .
 ├── Vagrantfile                   # Definição das VMs, Redes, RAM e Discos
 ├── README.md                     # Documentação Geral do Projeto
@@ -77,6 +82,8 @@ O ambiente é composto por 4 máquinas virtuais baseadas em **Debian 12 (Bookwor
     ├── named.conf.internal-zones # Definição das zonas direta e reversa
     ├── luis.marcelino.devops.db  # Arquivo da Zona Direta (Nomes -> IPs)
     └── 56.168.192.db             # Arquivo da Zona Reversa (IPs -> Nomes)
+```
+---
 
 ## 🛠️ Pré-requisitos
 Para executar este projeto, é necessário ter instalado:
@@ -91,3 +98,4 @@ Para executar este projeto, é necessário ter instalado:
    git clone [https://github.com/seu-usuario/projeto-asa.git](https://github.com/seu-usuario/projeto-asa.git)
    cd Projeto-asa
    vagrant up
+
