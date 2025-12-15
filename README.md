@@ -90,12 +90,31 @@ Para executar este projeto, é necessário ter instalado:
 * [VirtualBox](https://www.virtualbox.org/)
 * [Vagrant](https://www.vagrantup.com/)
 * [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+* Antes de iniciar o provisionamento com Vagrant, é necessário garantir que você possui uma chave SSH configurada na sua máquina local. O Ansible utilizará sua chave pública para configurar o acesso sem senha às VMs.
+
+### Verificando se você já possui uma chave
+
+Verifique se você já possui uma chave **Ed25519** ou similar na pasta `.ssh`:
+
+```bash
+ls -la ~/.ssh/*.pub
+```
+* Gerando uma nova chave SSH (Caso não possua)
+
+```bash
+ssh-keygen -t ed25519 -C "seu-email@dominio.com"
+```
+* Ao ser perguntado sobre o local do arquivo, apenas pressione Enter (para manter o padrão).
+
+* Ao ser perguntado sobre a passphrase (senha), pressione Enter duas vezes (para deixar sem senha, facilitando a automação com Ansible neste laboratório).
+
+---
 
 ## ▶️ Como Executar
 
 1. **execute esses comandos no terminal**
    ```bash
    git clone https://github.com/luishenrike083/Projeto-ASA.git
-   cd Projeto-asa
+   cd Projeto-ASA
    vagrant up
 
