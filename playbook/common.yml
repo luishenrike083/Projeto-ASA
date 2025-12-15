@@ -28,7 +28,7 @@
       group:
         name: ifpb
         state: present
-
+    
     - name: Cria usuários da equipe
       user:
         name: "{{ item }}"
@@ -37,15 +37,16 @@
         create_home: yes
         generate_ssh_key: yes
       loop: "{{ membros_equipe }}"
-
-    # [MUDANÇA 1] Apontando para a nova chave Ed25519
-    - name: Autoriza a NOVA chave pública (Ed25519)
+    
+    - name: Autoriza chaves públicas (Ignorando chaves RSA antigas)
       authorized_key:
         user: "{{ item }}"
         state: present
-        key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+        # cat: lê todos os arquivos .pub
+        # grep -v: remove as linhas que começam (^) com 'ssh-rsa'
+        key: "{{ lookup('pipe', 'cat ~/.ssh/id_*.pub | grep -v ^ssh-rsa') }}"
       loop: "{{ membros_equipe }}"
-
+    
     - name: Configura sudoers (NOPASSWD)
       lineinfile:
         path: /etc/sudoers
